@@ -1,8 +1,8 @@
-name: Check GRE GUI
+name: Check Google and Send Email
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Run every hour
+    - cron: '5 * * * *'  # Run every 5mins
 
 jobs:
   check_google:
@@ -10,4 +10,41 @@ jobs:
 
     steps:
       - name: Check connectivity
-        run: ping -c 5 https://gre-ap.dhl.com/
+        run: ping -c 5 google.com
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install sendgrid
+
+      - name: Send email
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          TO_EMAIL: 'eisach.yambao@dhl.com'
+        run: |
+          python - <<EOF
+          import os
+          from sendgrid import SendGridAPIClient
+          from sendgrid.helpers.mail import Mail
+
+          status = "Google is reachable" if os.system('ping -c 1 google.com') == 0 else "Google is not reachable"
+
+          message = Mail(
+              from_email='eisach.yambao@dhl.com',
+              to_emails=os.getenv('TO_EMAIL'),
+              subject='Google Status',
+              plain_text_content=status
+          )
+
+          try:
+              sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
+              response = sg.send(message)
+              print(response.status_code)
+              print(response.body)
+              print(response.headers)
+          except Exception as e:
+              print(str(e))
+          EOF
