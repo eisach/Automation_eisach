@@ -3,7 +3,7 @@ name: Check Outdated Links
 on:
   push:
     branches:
-      - master # Modify this branch name if needed
+      - main # Modify this branch name if needed
 
 jobs:
   check_links:
