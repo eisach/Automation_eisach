@@ -1,0 +1,13 @@
+name: Check GRE GUI
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Run every hour
+
+jobs:
+  check_google:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check connectivity
+        run: ping -c 5 https://gre-ap.dhl.com/
